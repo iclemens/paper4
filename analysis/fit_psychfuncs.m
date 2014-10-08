@@ -2,26 +2,13 @@ function [stim_resp, fit, mu, sigma] = fit_psychfuncs(experiment)
   %
   % Fits psychometric functions for either experiment 3 or 4.
   %
+    
+  [conditions, participants] = get_experiment_info(experiment);  
+
   
-  global global_config;
-  
-  % Default experiment is the 3rd
-  if nargin < 1
-    experiment = 3;
-  end
-  
-  % Load conditions and participant numbers for
-  % specified experiment
-  if experiment == 1 || experiment == 3
-    conditions = global_config.conditions_p3;
-    participants = 1:8;
-  elseif experiment == 2 || experiment == 4
-    conditions = global_config.conditions_p4;
-    participants = 11:18;
-  else
-    error('Invalid experiment specified.');
-  end
-  
+  % %%%%%%%%%%%%%%%%%%%%%%
+  % Pre-allocate matrices
+
   % Number of conditions and participants
   nconditions = size(conditions, 1);
   nparticipants = numel(participants);  
@@ -34,8 +21,12 @@ function [stim_resp, fit, mu, sigma] = fit_psychfuncs(experiment)
   mu = zeros(nconditions, nparticipants);
   sigma = zeros(nconditions, nparticipants);
   
+  
+  % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  % Fit curves for every participant, condition pair
+  
   for s = participants
-    sindex = s - (experiment - 1) * 10;    
+    sindex = mod(s, 10);
     figure(s);
 
     data = load_data(s);    
@@ -48,7 +39,7 @@ function [stim_resp, fit, mu, sigma] = fit_psychfuncs(experiment)
       if numel(subset) == 0
         error('No trials in condition...');
       end
-
+      
       % Create stimulus-response matrix
       stim_resp{c, sindex} = build_stim_resp(subset);
 
@@ -88,6 +79,26 @@ function data = load_data(s)
   
   data = load(sprintf('%s/cleaned_%02d.mat', global_config.cache_directory, s));
   data = data.data;
+end
+
+
+%
+% Returns conditions and participants for the given experiment.
+%
+function [conditions, participants] = get_experiment_info(experiment)
+  global global_config;
+  
+  % Load conditions and participant numbers for
+  % specified experiment
+  if experiment == 1 || experiment == 3
+    conditions = global_config.conditions_p3;
+    participants = 1:8;
+  elseif experiment == 2 || experiment == 4
+    conditions = global_config.conditions_p4;
+    participants = 11:18;
+  else
+    error('Invalid experiment specified.');
+  end  
 end
 
 
