@@ -1,5 +1,13 @@
 function perform_analyses(what)
-        
+%
+% This script call all the other analysis functions and stores the result
+% in the psychometrics_p#.mat file with # indicating experiment 3 or 4.
+%
+% Using the optional argument, you can specify which parts of the analysis
+% need to run again; the psychometric fits or one of the eye movement
+% analyses.
+%
+
     if nargin < 1
         what = {'psychfuncs', 'eye_simple_only_1st', 'eye_simple_both', 'eye_extended'};
     end
