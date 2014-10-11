@@ -71,6 +71,10 @@ function [stim_resp, fit, mu, sigma] = fit_psychfuncs(experiment)
 end
 
 
+% %%%%%%%%%%
+% Functions
+
+
 %
 % Load cleaned data for a single participant
 %

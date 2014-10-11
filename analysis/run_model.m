@@ -119,10 +119,8 @@ function output_p3 = run_model(model)
         else
             mu = cellfun(@(x) x.params.sim(i_run, 1), source.fit);
             mu = mu(:, i_part)';
-            
         end
         
-        %eye_gain_extended = source.eye_gain_extended_0_5;
         eye_gain_extended = source.eye_gain_extended;
         
         n_conds = size(source.mu, 1);
@@ -131,46 +129,59 @@ function output_p3 = run_model(model)
         data.mr = ones(size(mu)) * 0.1;
         data.mp = mu;
         
-        data.m1(1:2:n_conds) = data.mr(1:2:n_conds);
-        data.m1(2:2:n_conds) = data.mp(2:2:n_conds);
-        
-        data.m2(1:2:n_conds) = data.mp(1:2:n_conds);
-        data.m2(2:2:n_conds) = data.mr(2:2:n_conds);
-        
-        % Restructure eye movement data
-        if n_conds == 12
-            mmtx = [1, 2, 2, 1, 3, 4, 4, 3, 5, 6, 6, 5];
-        else
-            mmtx = [1, 2, 2, 1, 3, 4, 4, 3];
-        end
-        
         % Fixation depth
-        depth = eye_gain_extended.depth(:, :, 1);
-        data.d1 = depth(:, mmtx);
-        depth = eye_gain_extended.depth(:, :, 2);
-        data.d2 = depth(:, mmtx);
-        
-        data.dr(1:2:n_conds) = data.d1(1:2:n_conds);
-        data.dr(2:2:n_conds) = data.d2(2:2:n_conds);
-        
-        data.dp(1:2:n_conds) = data.d2(1:2:n_conds);
-        data.dp(2:2:n_conds) = data.d1(2:2:n_conds);
-        
+        data.d1 = expand_conditions(eye_gain_extended.depth(:, :, 1));
+        data.d2 = expand_conditions(eye_gain_extended.depth(:, :, 2));
+                
         % Eye movement gain
-        eye = squeeze(eye_gain_extended.gain(:, :, 1));
-        data.e1 = eye(i_part, mmtx);
-        
-        eye = squeeze(eye_gain_extended.gain(:, :, 2));
-        data.e2 = eye(i_part, mmtx);
-        
-        data.er(1:2:n_conds) = data.e1(1:2:n_conds);
-        data.er(2:2:n_conds) = data.e2(2:2:n_conds);
-        
-        data.ep(1:2:n_conds) = data.e2(1:2:n_conds);
-        data.ep(2:2:n_conds) = data.e1(2:2:n_conds);
+        data.e1 = expand_conditions(eye_gain_extended.gain(i_part, :, 1));
+        data.e2 = expand_conditions(eye_gain_extended.gain(i_part, :, 2));
+
+        % Convert intervals to reference/probe and vice versa
+        [data.m1, data.m2] = weave(data.mr, data.mp);        
+        [data.dr, data.dp] = weave(data.d1, data.d2);
+        [data.er, data.ep] = weave(data.e1, data.e2);        
     end
 end
 
+
+%
+% Converts first/second interval format data
+% into reference/probe format. 
+%
+% This function requires that all even rows
+% are reference first and all odd rows are
+% reference second.
+%
+function [r, p] = weave(one, two)
+  n_conds = numel(one);
+  
+  r(1:2:n_conds) = one(1:2:n_conds);
+  r(2:2:n_conds) = two(2:2:n_conds);
+  
+  p(1:2:n_conds) = two(1:2:n_conds);
+  p(2:2:n_conds) = one(1:2:n_conds);
+end
+
+
+%
+% Expands Ab Ba into Ab bA Ba aB in order to match
+% all of the 12 or 8 trial conditions (experiment 3
+% and 4 respectively).
+%
+function data = expand_conditions(data)
+  M = [1 2 2 1];
+  n = size(data, 2) / 2;
+  
+  seq = ceil((1:(n*4))/4 - 1) * 2 + repmat(M, 1, n);
+  
+  data = data(:, seq, :);
+end
+
+
+%
+% Combines two data from two experiments
+%
 function data = combine_data(data1, data2)
     data = struct();
     fields = fieldnames(data1);
