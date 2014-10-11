@@ -1,13 +1,10 @@
 function output_p3 = run_model(model)
     % Runs the model
-    
-    global global_config;
-    
+            
     % Parameters
     n_bootstrap_runs = 1; %3999;
     n_participants = 8;
-    
-    
+        
     % Load all data
     source_p3 = load('../analysis/psychometrics_p3.mat');
     source_p4 = load('../analysis/psychometrics_p4.mat');
@@ -20,13 +17,28 @@ function output_p3 = run_model(model)
     output_p3 = struct([]);
     output_p4 = struct([]);
     
-    % Load original data into output structures
     for sb = 1:n_participants
+        output_p3(sb).pred_sim.mp = nan(n_bootstrap_runs, 12);
+        output_p3(sb).pred_sim.m2 = nan(n_bootstrap_runs, 12);
+        
+        output_p4(sb).pred_sim.mp = nan(n_bootstrap_runs, 8);
+        output_p4(sb).pred_sim.m2 = nan(n_bootstrap_runs, 8);
+    end
+    
+    
+    % %%%%%%%%%%%
+    %  Fit model
+        
+    for sb = 1:n_participants
+        % Load original data into output structures
         data_p3 = filter_data(source_p3, sb);
         data_p4 = filter_data(source_p4, sb);
         
-        data = combine_data(data_p3, data_p4);
+        data_p3 = average_order_effect(data_p3);
+        data_p4 = average_order_effect(data_p4);
         
+        data = combine_data(data_p3, data_p4);
+                
         fields = {'m1', 'm2', 'mr', 'mp', 'e1', 'e2', 'er', 'ep'};
         for fl = 1:numel(fields)
             output_p3(sb).data.(fields{fl}) = data_p3.(fields{fl});
@@ -43,11 +55,6 @@ function output_p3 = run_model(model)
         output_p4(sb).pred.m2 = model.predict_mu_second(output_p3(sb).fit, data_p4);
         
         % Perform bootstrap
-        output_p3(sb).pred_sim.mp = nan(n_bootstrap_runs, 12);
-        output_p3(sb).pred_sim.m2 = nan(n_bootstrap_runs, 12);
-        
-        output_p4(sb).pred_sim.mp = nan(n_bootstrap_runs, 8);
-        output_p4(sb).pred_sim.m2 = nan(n_bootstrap_runs, 8);
         
         for r = 1:n_bootstrap_runs
             data_p3 = filter_data(source_p3, sb, r);
@@ -122,9 +129,7 @@ function output_p3 = run_model(model)
         end
         
         eye_gain_extended = source.eye_gain_extended;
-        
-        n_conds = size(source.mu, 1);
-        
+                
         % Restructure psychometrics (mu)
         data.mr = ones(size(mu)) * 0.1;
         data.mp = mu;
@@ -191,3 +196,35 @@ function data = combine_data(data1, data2)
     end    
 end
 
+
+%
+% Averages out order effect
+% Requires order of conditions to be Ab bA
+% The output will only consist of Ab
+% Interval order will be removed
+%
+function data = average_order_effect(data)
+  fields = fieldnames(data);
+  
+  for i = 1:numel(fields)
+    % Remove first/second interval fields as averaging across 
+    % reference order makes them obsolote.
+    if ctype_isdigit(fields{i}(end))
+      data = rmfield(data, fields{i});
+      continue;
+    end
+    
+    % Average other fields accross reference order
+    data.(fields{i}) = ...
+      0.5 * data.(fields{i})(1:2:end, :) + 0.5 * data.(fields{i})(2:2:end, :);
+  end
+  
+  end
+
+
+%
+% Returns true if character c is a digit
+%
+function v = ctype_isdigit(c)
+  v = (c >= '0') && (c <= '9');
+end
