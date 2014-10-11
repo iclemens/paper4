@@ -26,6 +26,10 @@ function output_p3 = run_model(model)
     end
     
     
+    Rsq = zeros(1, n_participants);
+    BIC = zeros(1, n_participants);
+    
+    
     % %%%%%%%%%%%
     %  Fit model
         
@@ -38,8 +42,9 @@ function output_p3 = run_model(model)
         data_p4 = average_order_effect(data_p4);
         
         data = combine_data(data_p3, data_p4);
-                
-        fields = {'m1', 'm2', 'mr', 'mp', 'e1', 'e2', 'er', 'ep'};
+
+        fields = {'mr', 'mp', 'er', 'ep'};
+
         for fl = 1:numel(fields)
             output_p3(sb).data.(fields{fl}) = data_p3.(fields{fl});
             output_p4(sb).data.(fields{fl}) = data_p4.(fields{fl});
@@ -48,11 +53,13 @@ function output_p3 = run_model(model)
         output_p3(sb).fit = model.solve_params(data);
         
         % Predictions for experiment 3 and 4
-        output_p3(sb).pred.mp = model.predict_mu_probe(output_p3(sb).fit, data_p3);
-        output_p3(sb).pred.m2 = model.predict_mu_second(output_p3(sb).fit, data_p3);
-        
+        output_p3(sb).pred.mp = model.predict_mu_probe(output_p3(sb).fit, data_p3);        
         output_p4(sb).pred.mp = model.predict_mu_probe(output_p3(sb).fit, data_p4);
-        output_p4(sb).pred.m2 = model.predict_mu_second(output_p3(sb).fit, data_p4);
+        
+        
+        Lp3 = compute_likelihood(source_p3, sb, output_p3(sb).pred.mp);
+        Lp4 = compute_likelihood(source_p4, sb, output_p4(sb).pred.mp);               
+        LL = Lp3 + Lp4;
         
         % Perform bootstrap
         
@@ -65,40 +72,40 @@ function output_p3 = run_model(model)
             output_p3(sb).sim(r, :) = model.solve_params(data);
             
             output_p3(sb).pred_sim.mp(r, :) = model.predict_mu_probe(output_p3(sb).sim(r, :), data_p3);
-            output_p3(sb).pred_sim.m2(r, :) = model.predict_mu_second(output_p3(sb).sim(r, :), data_p3);
-            
             output_p4(sb).pred_sim.mp(r, :) = model.predict_mu_probe(output_p3(sb).sim(r, :), data_p4);
-            output_p4(sb).pred_sim.m2(r, :) = model.predict_mu_second(output_p3(sb).sim(r, :), data_p4);
         end
-        
-        fprintf('%d:', sb);
-        
-        sim = nanmedian(output_p3(sb).sim, 1);
-        %fprintf(' %.2f', sim);
-        fprintf(' %s', strtrim(sprintf(' %.2f', output_p3(sb).fit)));
-        
-        % Compute performance statistics for fit
+                        
+        % Compute R Squared
         pred(sb, :) = [output_p3(sb).pred.mp output_p4(sb).pred.mp];
         act(sb, :) = [output_p3(sb).data.mp output_p4(sb).data.mp];
         
-        sse = sum((pred(sb, :) - act(sb, :)) .^ 2);
-        rsq = r_squared(act(sb, :), pred(sb, :));
-
-        fprintf(' sse %.2f rsq %.2f\n', sse, rsq);
+        Rsq(sb) = max(0, r_squared(act(sb, :), pred(sb, :)));
         
-        % SSE -> sum(error .^ 2);
-        % RSQ -> r_squared(actual, predicted)
-        %         L = probablity of (data given model, parameter)
-        %         k = number of free parameters
-        % BIC -> -2 * ln(L) + k * (ln(n) - ln(2*pi));
+        % Compute BIC
+        Nobs3 = sum(cellfun(@(entry) size(entry, 1), source_p3.stim_resp), 1);
+        Nobs4 = sum(cellfun(@(entry) size(entry, 1), source_p4.stim_resp), 1);
+        
+        k = numel(output_p3(sb).fit);   % Number of free parameters        
+        n = Nobs3(sb) + Nobs4(sb);      % Number of observations / data points
+        BIC(sb) = -2 * LL + k * (log(n) - log(2*pi));
     end
         
-    sse = sum((pred(:) - act(:)) .^ 2);
-    rsq = r_squared(act(:), pred(:));
-    
-    fprintf('All: sse %.2f rsq %.2f\n', sse, rsq);
-    
     save(sprintf('model_%s.mat', model.get_name()), 'output_p3', 'output_p4');
+
+    
+    % Print model output
+    fprintf('\n');
+    fprintf('Model summary: %s\n', model.get_name());
+    fprintf('\n');
+    
+    for sb = 1:n_participants
+      fprintf(' %d: ', sb);      
+      fprintf('[%s]', strtrim(sprintf(' %.2f', output_p3(sb).fit)));        
+      fprintf('\tBIC: %6.01f\tR2: %.2f', BIC(sb), Rsq(sb));
+      fprintf('\n');
+    end
+    
+    fprintf('\n');
     
     
     %
@@ -216,10 +223,42 @@ function data = average_order_effect(data)
     
     % Average other fields accross reference order
     data.(fields{i}) = ...
-      0.5 * data.(fields{i})(1:2:end, :) + 0.5 * data.(fields{i})(2:2:end, :);
-  end
+        0.5 * data.(fields{i})(1:2:end) + 0.5 * data.(fields{i})(2:2:end);
+  end  
+end
+
+
+%
+% Compute likelihood of data given predicted PSE
+%
+function L = compute_likelihood(src, i_participant, mp)
+  raw_data = src.stim_resp(:, i_participant);
   
+  sigma = cellfun(@(entry) entry.params.est(2), src.fit);  
+  sigma = sigma(:, i_participant);
+
+  gamma = cellfun(@(entry) entry.params.est(3), src.fit);  
+  gamma = gamma(:, i_participant);  
+  
+  n_conds = numel(sigma);
+  
+  if numel(mp) < n_conds
+    mp = mp(ceil((1:n_conds)/2));
   end
+
+  L = 0;  
+  
+  % Loop over conditions
+  for i = 1:n_conds
+    stim = raw_data{i}(:, 1);
+    resp = raw_data{i}(:, 2);
+    reps = raw_data{i}(:, 3);
+    
+    p = gamma(i) + (1 - 2 * gamma(i)) * normcdf(stim, mp(i), sigma(i));
+    
+    L = L + sum(log(binopdf(resp .* reps, reps, p)));
+  end
+end
 
 
 %
