@@ -5,19 +5,6 @@ classdef model_combined
             name = 'Combined';
         end
         
-        function predictions = predict_mu_second(params, data)
-            p1 = ifc(data.d1 == 0.5, params(1), params(2));
-            p2 = ifc(data.d2 == 0.5, params(1), params(2));
-
-            d1 = ifc(data.d1 == 0.5, params(3), params(4));
-            d2 = ifc(data.d2 == 0.5, params(3), params(4));
-            
-            a = d1 .* p1 .* data.e1 ./ data.d1 + (1 - p1);
-            b = d2 .* p2 .* data.e2 ./ data.d2 + (1 - p1);
-            
-            predictions = (data.m1 .* a) ./ b;   
-        end
-        
         function predictions = predict_mu_probe(params, data)
             pr = ifc(data.dr == 0.5, params(1), params(2));
             pp = ifc(data.dp == 0.5, params(1), params(2));
@@ -32,8 +19,6 @@ classdef model_combined
         end
         
         function params = solve_params(data)
-            %data = reduce_data(data, [1:4 13:20]);
-            
             % Parameters:
             % Alpha50, Alpha200, D50, D200
             
