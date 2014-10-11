@@ -25,7 +25,6 @@ classdef model_combined
             options = optimset('Display', 'None', 'algorithm', 'active-set');
             
             p0 = [0.5 0.5 0.5 0.5];            
-            
             lb = [0 0 1e-5 1e-5];
             ub = [1 1 1e5 1e5];            
             
@@ -36,13 +35,5 @@ classdef model_combined
                 params = nan(1, 4);
             end
         end
-    end
-end
-
-function data = reduce_data(data, conds)
-    fields = fieldnames(data);
-    
-    for i = 1:numel(fields)
-        data.(fields{i}) = data.(fields{i})(conds);
     end
 end
