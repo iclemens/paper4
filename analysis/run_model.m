@@ -84,14 +84,16 @@ function output_p3 = run_model(model)
         % Compute BIC
         Nobs3 = sum(cellfun(@(entry) size(entry, 1), source_p3.stim_resp), 1);
         Nobs4 = sum(cellfun(@(entry) size(entry, 1), source_p4.stim_resp), 1);
-        
+                
         k = numel(output_p3(sb).fit);   % Number of free parameters        
         n = Nobs3(sb) + Nobs4(sb);      % Number of observations / data points
-        BIC(sb) = -2 * LL + k * (log(n) - log(2*pi));
+        
+        Penalty(sb) = k * (log(n) - log(2 * pi));
+        BIC(sb) = -2 * LL + Penalty(sb);
     end
         
-    save(sprintf('model_%s.mat', model.get_name()), 'output_p3', 'output_p4');
-
+    save(sprintf('MDL_%s.mat', model.get_name()), 'output_p3', 'output_p4');
+    save(sprintf('BIC_%s.mat', model.get_name()), 'BIC', 'Rsq');
     
     % Print model output
     fprintf('\n');
@@ -101,7 +103,7 @@ function output_p3 = run_model(model)
     for sb = 1:n_participants
       fprintf(' %d: ', sb);      
       fprintf('[%s]', strtrim(sprintf(' %.2f', output_p3(sb).fit)));        
-      fprintf('\tBIC: %6.01f\tR2: %.2f', BIC(sb), Rsq(sb));
+      fprintf('\tBIC: %6.01f\tR2: %.2f\tPenalty: %5.01f', BIC(sb), Rsq(sb), Penalty(sb));
       fprintf('\n');
     end
     
