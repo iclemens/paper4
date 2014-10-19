@@ -34,7 +34,7 @@ function perform_analyses(what)
 
         if any(strcmp(what, 'psychfuncs'))
             fprintf(' Fitting psychometric functions\n');
-            [stim_resp, fit, mu, sigma] = fit_psychfuncs(experiment);
+            [stim_resp, fit, mu, sigma, collapsed] = fit_psychfuncs(experiment);
         end        
 
         if any(strcmp(what, 'eye_extended'))
@@ -45,7 +45,7 @@ function perform_analyses(what)
             eye_disp_extended = collect_normalized_eye_displacement('extended', experiment);
         end
 
-        save(outputfiles{experiment}, 'stim_resp', 'fit', 'mu', 'sigma', 'eye_gain_extended','eye_disp_extended');
+        save(outputfiles{experiment}, 'stim_resp', 'fit', 'mu', 'sigma', 'collapsed', 'eye_gain_extended','eye_disp_extended');
     end
 
     function y = pick(pred, a, b)

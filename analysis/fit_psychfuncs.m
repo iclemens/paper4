@@ -1,4 +1,4 @@
-function [stim_resp, fit, mu, sigma] = fit_psychfuncs(experiment)
+function [stim_resp, fit, mu, sigma, collapsed] = fit_psychfuncs(experiment)
   %
   % Fits psychometric functions for either experiment 3 or 4.
   %
@@ -67,7 +67,32 @@ function [stim_resp, fit, mu, sigma] = fit_psychfuncs(experiment)
       mu(c, sindex) = fit{c, sindex}.params.est(1);
       sigma(c, sindex) = fit{c, sindex}.params.est(2);
     end
+    
+    
+    % Collapse across reference order
+    for c = 1:2:nconditions
+        d = 0.5 + c / 2;
+        
+        mu_c(d, sindex) = 0.5 * (mu(c, sindex) + mu(c + 1, sindex));
+        
+        set1 = stim_resp{c + 0, sindex};
+        set2 = stim_resp{c + 1, sindex};
+        
+        set1(:, 1) = set1(:, 1) - mu(c, sindex) + mu_c(d, sindex);
+        set2(:, 1) = set2(:, 1) - mu(c, sindex) + mu_c(d, sindex);
+        
+        stim_resp_c{d, sindex} = [set1; set2];
+        fit_c{d, sindex} = pfit_wrapper(stim_resp_c{d, sindex}, 1);
+        
+        mu_c(d, sindex) = fit_c{d, sindex}.params.est(1);
+        sigma_c(d, sindex) = fit_c{d, sindex}.params.est(2);
+    end    
   end
+  
+  collapsed.mu = mu_c;
+  collapsed.sigma = sigma_c;  
+  collapsed.stim_resp = stim_resp_c;
+  collapsed.fit = fit_c;
 end
 
 
