@@ -2,8 +2,14 @@ classdef model_eye_movements
 
     methods(Static = true)
         function name = get_name()
-            name = 'EyeMovements';
+            name = 'Eye movements';
         end
+        
+        function labels = get_param_names()
+          labels = {
+            'Alpha'
+            };
+        end        
         
         function predictions = predict_mu_second(params, data)            
             a = params * data.e1 ./ data.d1 + (1 - params);
@@ -20,7 +26,11 @@ classdef model_eye_movements
         end
         
         function params = solve_params(d_p3, ~)
-            fit_conditions = 1:4;
+            if any(numel(d_p3.er) == [6 10])
+                fit_conditions = 1:2;
+            elseif any(numel(d_p3.er) == [12 20])
+                fit_conditions = 1:4;
+            end
 
             er = d_p3.er(fit_conditions) ./ d_p3.dr(fit_conditions);
             ep = d_p3.ep(fit_conditions) ./ d_p3.dp(fit_conditions);

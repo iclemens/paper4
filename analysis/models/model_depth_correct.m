@@ -2,8 +2,14 @@ classdef model_depth_correct
 
     methods(Static = true)
         function name = get_name()
-            name = 'DepthCorrected';
+            name = 'Depth corrected';
         end
+        
+        function labels = get_param_names()
+          labels = {
+            'Alpha'
+            };
+        end        
         
         function predictions = predict_mu_second(params, data)            
             a = params * data.e1 + (1 - params);

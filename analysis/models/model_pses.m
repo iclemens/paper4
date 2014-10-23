@@ -5,6 +5,12 @@ classdef model_pses
             name = 'PSEs';
         end
         
+        function labels = get_param_names()
+          labels = {
+            'BW', 'WB', 'FW', 'WF', 'BF', 'FB', 'B NF', 'B FN', 'W NF', 'W FN'
+            };
+        end
+        
         function predictions = predict_mu_probe(params, data)
             predictions = data.mp;
         end
