@@ -52,8 +52,7 @@ function initialize()
         
         %%%%%%%%%%%%%%%%%
         % Laptop at home
-    elseif (numel(hostname) >= 5 && strcmp(lower(hostname(1:5)), 'ivars')) || ...
-           (numel(hostname) >= 7 && strcmp(hostname(1:7), 'macbook'))
+    elseif ismac()
         tools_base = '/Users/work/Dropbox/Development/MATLAB/Tools';
         
         global_config.data_directory = '/Users/work/Dropbox/AnalysisCache/Latest';
