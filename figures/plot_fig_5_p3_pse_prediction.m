@@ -3,11 +3,11 @@ function plot_fig_5_p3_pse_prediction()
     
     lin = @(x) x(:);
     
-    data_all = load('../analysis/model_hfd_3999');
+    data_all = load('../analysis/data/MDL_Eye movements');
     
     for j = 1:8
-        data.mup(:, j) = data_all.output_p3(j).data.mup;
-        data.muppred(:, j) = data_all.output_p3(j).pred.mup;
+        data.mup(:, j) = data_all.output_p3(j).data.mp;
+        data.muppred(:, j) = data_all.output_p3(j).pred.mp;
     end
     
     colors = color_scheme(1);
@@ -25,18 +25,7 @@ function plot_fig_5_p3_pse_prediction()
         % Collapse conditions
         ss_fit = ss_fit(2:2:end) / 2;
         ss_tst = ss_tst(2:2:end) / 2;
-        
-        fields = fieldnames(data);
-        for i_field = 1:numel(fields)
-            field = fields{i_field};
-            
-            if field(end) == '1' || field(end) == '2'
-                data = rmfield(data, field);
-            else
-                data.(field) = 0.5 * (data.(field)(1:2:end, :) + data.(field)(2:2:end, :));
-            end
-        end
-        
+             
         % Prepare figure
         figure(10);
         clf;
