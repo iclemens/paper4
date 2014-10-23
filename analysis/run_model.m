@@ -49,8 +49,9 @@ function output_p3 = run_model(model)
             output_p3(sb).data.(fields{fl}) = data_p3.(fields{fl});
             output_p4(sb).data.(fields{fl}) = data_p4.(fields{fl});
         end
-        
+                        
         output_p3(sb).fit = model.solve_params(data);
+        params(sb, :) = output_p3(sb).fit;
         
         % Predictions for experiment 3 and 4
         output_p3(sb).pred.mp = model.predict_mu_probe(output_p3(sb).fit, data_p3);        
@@ -59,10 +60,9 @@ function output_p3 = run_model(model)
         
         Lp3 = compute_likelihood(source_p3, sb, output_p3(sb).pred.mp);
         Lp4 = compute_likelihood(source_p4, sb, output_p4(sb).pred.mp);               
-        LL = Lp3 + Lp4;
+        LL = Lp3 + Lp4;       
         
-        % Perform bootstrap
-        
+        % Perform bootstrap        
         for r = 1:n_bootstrap_runs
             data_p3 = filter_data(source_p3, sb, r);
             data_p4 = filter_data(source_p4, sb, r);
@@ -81,6 +81,8 @@ function output_p3 = run_model(model)
         
         Rsq(sb) = max(0, r_squared(act(sb, :), pred(sb, :)));
         
+        Rsq(sb) = max(0, r_squared(act(sb, 1:6), pred(sb, 1:6)));
+        
         % Compute BIC
         Nobs3 = sum(cellfun(@(entry) size(entry, 1), source_p3.stim_resp), 1);
         Nobs4 = sum(cellfun(@(entry) size(entry, 1), source_p4.stim_resp), 1);
@@ -91,9 +93,11 @@ function output_p3 = run_model(model)
         Penalty(sb) = k * (log(n) - log(2 * pi));
         BIC(sb) = -2 * LL + Penalty(sb);
     end
-        
-    save(sprintf('MDL_%s.mat', model.get_name()), 'output_p3', 'output_p4');
-    save(sprintf('BIC_%s.mat', model.get_name()), 'BIC', 'Rsq');
+
+    labels = model.get_param_names();
+    
+    save(sprintf('MDL_%s.mat', model.get_name()), 'output_p3', 'output_p4', 'labels');
+    save(sprintf('BIC_%s.mat', model.get_name()), 'BIC', 'Rsq', 'params', 'labels');
     
     % Print model output
     fprintf('\n');
@@ -160,77 +164,6 @@ end
 
 
 %
-% Converts first/second interval format data
-% into reference/probe format. 
-%
-% This function requires that all even rows
-% are reference first and all odd rows are
-% reference second.
-%
-function [r, p] = weave(one, two)
-  n_conds = numel(one);
-  
-  r(1:2:n_conds) = one(1:2:n_conds);
-  r(2:2:n_conds) = two(2:2:n_conds);
-  
-  p(1:2:n_conds) = two(1:2:n_conds);
-  p(2:2:n_conds) = one(1:2:n_conds);
-end
-
-
-%
-% Expands Ab Ba into Ab bA Ba aB in order to match
-% all of the 12 or 8 trial conditions (experiment 3
-% and 4 respectively).
-%
-function data = expand_conditions(data)
-  M = [1 2 2 1];
-  n = size(data, 2) / 2;
-  
-  seq = ceil((1:(n*4))/4 - 1) * 2 + repmat(M, 1, n);
-  
-  data = data(:, seq, :);
-end
-
-
-%
-% Combines two data from two experiments
-%
-function data = combine_data(data1, data2)
-    data = struct();
-    fields = fieldnames(data1);
-    
-    for i = 1:numel(fields)
-        data.(fields{i}) = [data1.(fields{i}), data2.(fields{i})];
-    end    
-end
-
-
-%
-% Averages out order effect
-% Requires order of conditions to be Ab bA
-% The output will only consist of Ab
-% Interval order will be removed
-%
-function data = average_order_effect(data)
-  fields = fieldnames(data);
-  
-  for i = 1:numel(fields)
-    % Remove first/second interval fields as averaging across 
-    % reference order makes them obsolote.
-    if ctype_isdigit(fields{i}(end))
-      data = rmfield(data, fields{i});
-      continue;
-    end
-    
-    % Average other fields accross reference order
-    data.(fields{i}) = ...
-        0.5 * data.(fields{i})(1:2:end) + 0.5 * data.(fields{i})(2:2:end);
-  end  
-end
-
-
-%
 % Compute likelihood of data given predicted PSE
 %
 function L = compute_likelihood(src, i_participant, mp)
@@ -260,12 +193,4 @@ function L = compute_likelihood(src, i_participant, mp)
     
     L = L + sum(log(binopdf(resp .* reps, reps, p)));
   end
-end
-
-
-%
-% Returns true if character c is a digit
-%
-function v = ctype_isdigit(c)
-  v = (c >= '0') && (c <= '9');
 end
