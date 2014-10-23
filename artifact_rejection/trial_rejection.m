@@ -29,8 +29,8 @@ function trial_rejection(cfg)
     slope_world_after = compute_slope(data(sel_world));
     slope_body_after = compute_slope(data(sel_body));
     
-    fprintf('Test calibration => Slope body: %.2f (%.2f); world: %.2f (%.2f)\n', ...
-      slope_body_after, slope_body, slope_world_after, slope_world);
+    %fprintf('Test calibration => Slope body: %.2f (%.2f); world: %.2f (%.2f)\n', ...
+    %  slope_body_after, slope_body, slope_world_after, slope_world);
   end
   
   
@@ -40,18 +40,6 @@ function trial_rejection(cfg)
     Y = arrayfun(@(t) diff( t.angles([251 751], 1)), tmp)';
     slope = regress(Y, X);
   end
-  
-  
-  %         for i_interval = intervals
-  %           selection = arrayfun(@(t) ...
-  %             strcmp(t.fix_type{i_interval}, conditions{i_conditions, 1}) && ...
-  %             t.fix_distance(i_interval) == conditions{i_conditions, 2} , data);
-  %
-  %           X = [X; arrayfun(@(t) atan2(t.sled_distance(i_interval), 0.5), data(selection))'];
-  %           Y = [Y; arrayfun(@(t) diff(t.angles([250 750], i_interval)), data(selection))'];
-  %         end
-  %
-  %         [mn, bint] = regress(Y, X);
   
   
   function data = apply_cal_func(data, cal_func)
@@ -65,16 +53,18 @@ function trial_rejection(cfg)
   end
   
   
-  function [data, count] = mark_bad_intervals(data, interval)
+  function [data, count, overspeed] = mark_bad_intervals(data, interval)
     type = data(1).fix_type{interval};
     
     % Number of standard deviations
     if strcmp(type, 'world')
-      threshold = 0.90;
+      threshold = 0.95;
     elseif strcmp(type, 'none')
       threshold = 0.99;
+    elseif strcmp(type, 'body')
+      threshold = 0.95;
     else
-      threshold = 0.975;
+      error('Invalid condition');
     end
     
     angle_ideal = arrayfun(@(t) atan2(t.sled_distance(interval), 0.5), data)';
@@ -100,13 +90,15 @@ function trial_rejection(cfg)
       spd(t) = nanmax(nanmax(diff(angles) / 0.002));
     end
     
+    overspeed = 0;
     for t = 1:numel(data)
+        overspeed = overspeed + (spd(t) > 6 * nanstd(spd));
       data(t).reject = data(t).reject | bad_ones(t) | spd(t) > 6 * nanstd(spd);
     end
   end
   
   
-  function [data, rate] = mark_bad_trials(local_config, data, experiment)
+  function [data, rate, count] = mark_bad_trials(local_config, data, experiment)
     
     % Add fields to struct to avoid errors in the future.
     for t = 1:numel(data)
@@ -121,7 +113,13 @@ function trial_rejection(cfg)
     end
     
     ntypes = size(types, 1);
+    
+    % The count matrix will contain number of trials rejected
+    % for every condition in the first interval (diagonal)
+    % and in the second interval (off diagonal). See the types
+    % array above for the order.
     count = zeros(ntypes, ntypes);
+    blink = zeros(ntypes, ntypes);
     
     session_ids = arrayfun(@(t) t.block.session, data);
     h = figure();
@@ -135,11 +133,11 @@ function trial_rejection(cfg)
       cal_func = create_cal_func(data(selection));
       data(selection) = apply_cal_func(data(selection), cal_func);     
     end
-    
-    
+        
     % Perform analysis
     for session = unique(session_ids)
       for i_type = 1:size(types, 1)
+        % First interval
         selection = (session_ids == session) & ...
           arrayfun(@(t) strcmp(t.fix_type{1}, types(i_type, 1)) && ...
           t.fix_distance(1) == types{i_type, 2}, data);
@@ -150,8 +148,9 @@ function trial_rejection(cfg)
         subplot(ntypes, ntypes, (i_type - 1) * ntypes + i_type); hold on;
         title(sprintf('%s-', types{i_type}));
         
-        [data(selection), cnt] = mark_bad_intervals(data(selection), 1);
+        [data(selection), cnt, overspeed] = mark_bad_intervals(data(selection), 1);
         count(i_type, i_type) = count(i_type, i_type) + cnt;
+        blink(i_type, i_type) = blink(i_type, i_type) + overspeed;
         title(sprintf('%d', count(i_type, i_type)));
         
         % Second interval
@@ -172,8 +171,9 @@ function trial_rejection(cfg)
           
           title(sprintf('%s-%s', types{i_type}, types{j_type}));
           
-          [data(selection), cnt] = mark_bad_intervals(data(selection), 2);
+          [data(selection), cnt, overspeed] = mark_bad_intervals(data(selection), 2);
           count(i_type, j_type) = count(i_type, j_type) + cnt;
+          blink(i_type, j_type) = blink(i_type, j_type) + overspeed;
           title(sprintf('%d', count(i_type, j_type)));
         end
       end
@@ -190,19 +190,19 @@ function trial_rejection(cfg)
     
     filename = sprintf('%s/reject_graph_%02d.eps', local_config.figure_directory, local_config.experiment_id);
     print(h, filename, '-depsc2');
-    
-    
+        
     % Remove fields that are no longer required
     data = rmfield(data, 'samples');
     
     disp('Rejection matrix:');
     disp(count ./ numel(data) * 100);
+    disp(blink ./ numel(data) * 100);
     
     rate = sum(arrayfun(@(t) t.reject ~= 0, data)) / numel(data);
     
     fprintf('Rejected %.2f%% (%.2f)\n', rate * 100, 100 * nansum(count(:)) ./ numel(data));
     
-    close(h);
+    %close(h);
   end
   
   
@@ -224,20 +224,30 @@ function trial_rejection(cfg)
       
       if experiment_id < 10
         experiment = 1;
+        ntypes = 3;
       else
         experiment = 2;
+        ntypes = 4;
       end
+      
+
+      count = zeros(ntypes, ntypes);      
       
       data = [];
       load(sprintf('%s/preproc_%02d', global_config.cache_directory, experiment_id));
-      [data, rate(experiment_id)] = mark_bad_trials(local_config, data, experiment);
-            
+      [data, rate(experiment_id), cnt] = mark_bad_trials(local_config, data, experiment);
+
+      count = count + cnt / numel(cfg.experiment_ids);
+      
       output_filename = sprintf('%s/cleaned_%02d', global_config.cache_directory, experiment_id);
       save(output_filename, 'data');
       
       %plot_rejected_traces(local_config, data);
       
     end
+    
+    disp(count);
+    disp(sum(count));
     
     fprintf('Rejected %.2f%% of all trials\n', nanmean(rate)*100);
   end
