@@ -22,7 +22,7 @@ function compare_models()
 
 
   % Load all BIC arrays from the current directory
-  files = dir('.');
+  files = dir('data');
   n_models = 0;
 
   for i = 1:numel(files)
@@ -30,12 +30,12 @@ function compare_models()
       n_models = n_models + 1;
       
       name = files(i).name(5:end-4);
-      models{n_models} = load(files(i).name);
+      models{n_models} = load(['data/' files(i).name]);
       models{n_models}.name = name;
     end
   end
 
-  f = fopen('report.html', 'w');
+  f = fopen('report/report.html', 'w');
   fprintf(f, '<html><head>');
   fprintf(f, '<style>th, tr { padding-right: 10px; padding-left: 10px; } th { border-bottom: 1px solid black; } th {text-align: center; } td {text-align: right; }</style>');
   fprintf(f, '</head><body>\n');
