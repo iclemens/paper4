@@ -14,5 +14,5 @@ function [r, p] = weave(one, two)
   r(2:2:n_conds) = two(2:2:n_conds);
   
   p(1:2:n_conds) = two(1:2:n_conds);
-  p(2:2:n_conds) = one(1:2:n_conds);
+  p(2:2:n_conds) = one(2:2:n_conds);
 end
