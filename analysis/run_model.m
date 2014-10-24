@@ -1,10 +1,12 @@
 function output_p3 = run_model(model)
     % Runs the model
-            
+
+    participants = 1:8;
+    
     % Parameters
     n_bootstrap_runs = 1; %3999;
-    n_participants = 8;
-        
+    n_participants = numel(participants);
+
     % Load all data
     source_p3 = load('../analysis/psychometrics_p3.mat');
     source_p4 = load('../analysis/psychometrics_p4.mat');
@@ -34,7 +36,9 @@ function output_p3 = run_model(model)
     %  Fit model
         
     for sb = 1:n_participants
-        % Load original data into output structures
+        % Combined data from both datasets and
+        %  (optionally) average out order effect
+        
         data_p3 = filter_data(source_p3, sb);
         data_p4 = filter_data(source_p4, sb);
         
@@ -43,6 +47,7 @@ function output_p3 = run_model(model)
         
         data = combine_data(data_p3, data_p4);
 
+        % Load original data into output structures
         fields = {'mr', 'mp', 'er', 'ep'};
 
         for fl = 1:numel(fields)
@@ -96,8 +101,8 @@ function output_p3 = run_model(model)
 
     labels = model.get_param_names();
     
-    save(sprintf('MDL_%s.mat', model.get_name()), 'output_p3', 'output_p4', 'labels');
-    save(sprintf('BIC_%s.mat', model.get_name()), 'BIC', 'Rsq', 'params', 'labels');
+    save(sprintf('data/MDL_%s.mat', model.get_name()), 'output_p3', 'output_p4', 'labels');
+    save(sprintf('data/BIC_%s.mat', model.get_name()), 'BIC', 'Rsq', 'params', 'labels');
     
     % Print model output
     fprintf('\n');
@@ -107,7 +112,8 @@ function output_p3 = run_model(model)
     for sb = 1:n_participants
       fprintf(' %d: ', sb);      
       fprintf('[%s]', strtrim(sprintf(' %.2f', output_p3(sb).fit)));        
-      fprintf('\tBIC: %6.01f\tR2: %.2f\tPenalty: %5.01f', BIC(sb), Rsq(sb), Penalty(sb));
+      fprintf('\tR2: %.2f', Rsq(sb));
+      %fprintf('\tBIC: %6.01f\tR2: %.2f\tPenalty: %5.01f', BIC(sb), Rsq(sb), Penalty(sb));
       fprintf('\n');
     end
     
@@ -141,24 +147,24 @@ function output_p3 = run_model(model)
             mu = mu(:, i_part)';
         end
         
-        eye_gain_extended = source.eye_gain_extended;
+        eye_gain = source.eye_gain;
                 
         % Restructure psychometrics (mu)
         data.mr = ones(size(mu)) * 0.1;
         data.mp = mu;
-        
+
         % Fixation depth
-        data.d1 = expand_conditions(eye_gain_extended.depth(:, :, 1));
-        data.d2 = expand_conditions(eye_gain_extended.depth(:, :, 2));
-                
+        data.d1 = eye_gain.depth(1, :, 1);
+        data.d2 = eye_gain.depth(1, :, 2);
+               
         % Eye movement gain
-        data.e1 = expand_conditions(eye_gain_extended.gain(i_part, :, 1));
-        data.e2 = expand_conditions(eye_gain_extended.gain(i_part, :, 2));
+        data.e1 = eye_gain.gain(i_part, :, 1);
+        data.e2 = eye_gain.gain(i_part, :, 2);
 
         % Convert intervals to reference/probe and vice versa
         [data.m1, data.m2] = weave(data.mr, data.mp);        
         [data.dr, data.dp] = weave(data.d1, data.d2);
-        [data.er, data.ep] = weave(data.e1, data.e2);        
+        [data.er, data.ep] = weave(data.e1, data.e2);
     end
 end
 

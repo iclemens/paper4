@@ -39,13 +39,13 @@ function perform_analyses(what)
 
         if any(strcmp(what, 'eye_extended'))
             fprintf(' Extended (gain / exp)\n');
-            eye_gain_extended = collect_eye_gain('extended', experiment);
+            eye_gain = collect_eye_gain('extended', experiment);
 
-            fprintf(' Extended (disp)\n');
-            eye_disp_extended = collect_normalized_eye_displacement('extended', experiment);
+            %fprintf(' Extended (disp)\n');
+            %eye_disp_extended = collect_normalized_eye_displacement('extended', experiment);
         end
 
-        save(outputfiles{experiment}, 'stim_resp', 'fit', 'mu', 'sigma', 'collapsed', 'eye_gain_extended','eye_disp_extended');
+        save(outputfiles{experiment}, 'stim_resp', 'fit', 'mu', 'sigma', 'eye_gain');
     end
 
     function y = pick(pred, a, b)
