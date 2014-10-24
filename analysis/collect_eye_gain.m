@@ -1,4 +1,4 @@
-function out = collect_eye_gain(mode, experiment, participants)
+function [out, conds] = collect_eye_gain(mode, experiment, participants)
 %
 % If mode is simple ...
 %
@@ -10,8 +10,13 @@ function out = collect_eye_gain(mode, experiment, participants)
 % Otherwise (i.e. when extended is used without specifying a distance),
 % the actual fixation distance is used.
 %
-        
+
+% For the extended mode, the order of conditions is:
+%  body-world, world-body, none-world, world-none, body-none, none-body
+
     global global_config;
+    
+    conds = cell(1, 6, 2);
     
     if nargin < 3, participants = 1:8; end;
     if nargin < 2, experiment = 1; end;
@@ -24,14 +29,15 @@ function out = collect_eye_gain(mode, experiment, participants)
         conditions = global_config.conditions_p4;
     end
     
-    conditions = vertcat(conditions{:});
-    conditions = conditions([conditions{:, 5}] == 1, 1:4);
+    conditions = vertcat(conditions{:});    
     nconditions = size(conditions, 1);
 
     % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % %
     % Mode: simple_*
     
     if strncmp(mode, 'simple', 6)
+        conditions = conditions([conditions{:, 5}] == 1, 1:4);
+        
         if experiment == 1
             conditions = conditions(1:(size(conditions, 1)/2), 1:2);
         else
@@ -100,6 +106,8 @@ function out = collect_eye_gain(mode, experiment, participants)
         end
         
         for s = 1:8
+            figure(s);
+          
             if experiment == 1
                 data = load(sprintf('%s/cleaned_%02d.mat', global_config.cache_directory, s));
             else
@@ -108,9 +116,11 @@ function out = collect_eye_gain(mode, experiment, participants)
             
             data = data.data([data.data.reject] == 0);
             
+            % Loop over reference first movements
             for i_cond = 1:nconditions
                 condition = conditions(i_cond, :);
-                
+
+                % Select trials that match this condition
                 selection = arrayfun(@(t) ...
                     strcmp(t.fix_type{1}, condition{1}) & ...
                     strcmp(t.fix_type{2}, condition{3}) & ...
@@ -134,7 +144,9 @@ function out = collect_eye_gain(mode, experiment, participants)
                      arrayfun(@(t) diff(t.angles([251 751], 2)), data(selection))'];
                 
                 for i_int = 1:2
-                    [mn, bint] = regress(Y(:, i_int), X(:, i_int));
+                    subplot(4, 6, i_int*6 + i_cond - 6);
+                  
+                    [mn, bint] = regress(Y(:, i_int), X(:, i_int));                                        
                     
                     if isnan(distance)
                         out.depth(1, i_cond, i_int) = condition{i_int * 2};
@@ -142,10 +154,15 @@ function out = collect_eye_gain(mode, experiment, participants)
                         out.depth(1, i_cond, i_int) = distance;
                     end
                     
+                    conds{1, i_cond, i_int} = [condition{1} '-' condition{3}];
+                    
+                    plot(X(:, i_int), Y(:, i_int), 'r.'); lsline;
+                    title([conds{1, i_cond, i_int} ' ' sprintf('%.2f', mn)]);
+                    
                     out.gain(s, i_cond, i_int) = mn;
                     out.low(s, i_cond, i_int) = abs(bint(1) - mn);
                     out.high(s, i_cond, i_int) = abs(bint(2) - mn);
-                    
+
                     mn_boot = bootstrp(4999, @regress, X(:, i_int), Y(:, i_int));
                     out.gain_boot{s, i_cond, i_int} = mn_boot;
                 end
