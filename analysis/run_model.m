@@ -35,7 +35,7 @@ function output_p3 = run_model(model)
     % %%%%%%%%%%%
     %  Fit model
         
-    for sb = 1:n_participants
+    for sb = participants
         % Combined data from both datasets and
         %  (optionally) average out order effect
         
@@ -84,9 +84,15 @@ function output_p3 = run_model(model)
         pred(sb, :) = [output_p3(sb).pred.mp output_p4(sb).pred.mp];
         act(sb, :) = [output_p3(sb).data.mp output_p4(sb).data.mp];
         
-        Rsq(sb) = max(0, r_squared(act(sb, :), pred(sb, :)));
+        Rsq(sb) = max(0, r_squared(act(sb, :), pred(sb, :)));    
         
-        Rsq(sb) = max(0, r_squared(act(sb, 1:6), pred(sb, 1:6)));
+        if(size(act, 2) == 20)        
+          Rsq(sb) = max(0, r_squared(act(sb, 1:12), pred(sb, 1:12)));          
+          RsqBW(sb) = max(0, r_squared(act(sb, 1:4), pred(sb, 1:4)));          
+        else
+          Rsq(sb) = max(0, r_squared(act(sb, 1:6), pred(sb, 1:6)));
+          RsqBW(sb) = max(0, r_squared(act(sb, 1:2), pred(sb, 1:2)));
+        end
         
         % Compute BIC
         Nobs3 = sum(cellfun(@(entry) size(entry, 1), source_p3.stim_resp), 1);
@@ -101,18 +107,21 @@ function output_p3 = run_model(model)
 
     labels = model.get_param_names();
     
-    save(sprintf('data/MDL_%s.mat', model.get_name()), 'output_p3', 'output_p4', 'labels');
-    save(sprintf('data/BIC_%s.mat', model.get_name()), 'BIC', 'Rsq', 'params', 'labels');
+    % Only save if data for all participants has been analyzed
+    if(n_participants == 8)
+      save(sprintf('data/MDL_%s.mat', model.get_name()), 'output_p3', 'output_p4', 'labels');
+      save(sprintf('data/BIC_%s.mat', model.get_name()), 'BIC', 'Rsq', 'params', 'labels');
+    end
     
     % Print model output
     fprintf('\n');
     fprintf('Model summary: %s\n', model.get_name());
     fprintf('\n');
     
-    for sb = 1:n_participants
+    for sb = participants
       fprintf(' %d: ', sb);      
       fprintf('[%s]', strtrim(sprintf(' %.2f', output_p3(sb).fit)));        
-      fprintf('\tR2: %.2f', Rsq(sb));
+      fprintf('\tR2: %.2f\tR2BW: %.2f', Rsq(sb), RsqBW(sb));
       %fprintf('\tBIC: %6.01f\tR2: %.2f\tPenalty: %5.01f', BIC(sb), Rsq(sb), Penalty(sb));
       fprintf('\n');
     end
@@ -148,7 +157,9 @@ function output_p3 = run_model(model)
         end
         
         eye_gain = source.eye_gain;
-                
+
+        data.ql = cellfun(@(fit) nanstd(fit.params.sim(:, 1)), source.fit(:, i_part))';
+
         % Restructure psychometrics (mu)
         data.mr = ones(size(mu)) * 0.1;
         data.mp = mu;

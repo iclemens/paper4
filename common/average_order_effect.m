@@ -5,8 +5,17 @@
 % The output will only consist of Ab
 % Interval order will be removed
 
-function data = average_order_effect(data)
-  fields = fieldnames(data);
+function data = average_order_effect(data)  
+  ql = data.ql;
+  data = rmfield(data, 'ql');  
+  
+  w1 = 1./ql(1:2:end) ./ (1./ql(1:2:end) + 1./ql(2:2:end));
+  w2 = 1./ql(2:2:end) ./ (1./ql(1:2:end) + 1./ql(2:2:end));
+  
+  w1 = 0.5;
+  w2 = 0.5;
+  
+  fields = fieldnames(data);  
   
   for i = 1:numel(fields)
     % Remove first/second interval fields as averaging across 
@@ -18,6 +27,6 @@ function data = average_order_effect(data)
     
     % Average other fields accross reference order
     data.(fields{i}) = ...
-        0.5 * data.(fields{i})(1:2:end) + 0.5 * data.(fields{i})(2:2:end);
+        w1 .* data.(fields{i})(1:2:end) + w2 .* data.(fields{i})(2:2:end);
   end  
 end

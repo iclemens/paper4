@@ -12,13 +12,17 @@ classdef model_paper3_bw
         end        
         
         function predictions = predict_mu_second(params, data)            
+            params = params / 2;
+            
             a = params * data.e1 ./ data.d1 + (1 - params);
             b = params * data.e2 ./ data.d2 + (1 - params);
             
             predictions = (data.m1 .* a) ./ b;            
         end
         
-        function predictions = predict_mu_probe(params, data)           
+        function predictions = predict_mu_probe(params, data) 
+            params = params / 2;
+          
             a = params * data.er ./ data.dr + (1 - params);
             b = params * data.ep ./ data.dp + (1 - params);
             
@@ -41,7 +45,9 @@ classdef model_paper3_bw
             Y = mp - mr;
             X = er .* mr - ep .* mp + mp - mr;
             
-            params = X' \ Y';
+            % Bias = a * (bias vest) + a * (er mr - ep mp)
+            
+            params = (X' \ Y') * 2;
         end
 
     end
