@@ -100,8 +100,8 @@ function initialize()
         17, 17, 4, 1, 35; 17, 17, 4, 36, 70;
         18, 18, 4, 1, 34; 18, 18, 5, 35, 64
         ];
-
-
+      
+      
     % List of conditions in the experiment for paper 3
     global_config.conditions_p3 = { ...
         {'body',  0.5, 'world', 0.5, 1};
