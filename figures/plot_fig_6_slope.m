@@ -5,8 +5,15 @@ function plot_fig_6_slope
     
     % Load data
     colors = color_scheme(1);
-    mu = data.collapsed.mu;
-    sigma = data.collapsed.sigma;
+    symbols = '<>v^osph';
+    
+    
+    
+    %mu = data.collapsed.mu;
+    %sigma = data.collapsed.sigma;
+    
+    mu = data.mu;
+    sigma = data.sigma;
     
     X = linspace(0, 0.25, 20);
     
@@ -33,26 +40,35 @@ function plot_fig_6_slope
     figure(6); clf; hold on;    
     handle_axes = subplot(1, 1, 1);
     
-    xlim([0 0.25]);
+    xlim([0 0.25] - 0.125);
     ylim([0 0.15]);
     
-    h = plot(X, x_lin);
+    h = plot(X - 0.1, x_lin);
     
     set(h, 'Color', 'k', 'LineStyle', '--');
     
-    for c = 1:6
-        plot(mu(c, :), sigma(c, :), 'x', 'LineWidth', 2, 'Color', colors(c, :));
+    for s = 1:8
+      for c = 1:6
+          color = colors(c, :);
+        
+          h = plot(mu(c, s) - 0.1, sigma(c, s), symbols(s), 'Color', colors(c, :));
+          
+          set(h, ...
+                    'MarkerFaceColor', 0.4 * [1 1 1] + 0.6 * color, ...
+                    'MarkerEdgeColor', color, ...
+                    'MarkerSize', 3);          
+      end
     end
 
-    xlabel(handle_axes, 'PSE (cm)', 'FontSize', 12);
+    xlabel(handle_axes, '\Delta distance (cm)', 'FontSize', 12);
     ylabel(handle_axes, 'Sigma (cm)', 'FontSize', 12);
     
     % Styling
     set(handle_axes, ...
       'FontSize', 10, ...
-      'XTick', [0 0.1 0.2], ...
+      'XTick', [-0.1 0 0.1 0.2], ...
       'YTick', [0 0.1], ...
-      'XTickLabel', {'0', '10', '20'}, ...
+      'XTickLabel', {'-10', '0', '10', '20'}, ...
       'YTickLabel', {'0', '10'});   
   
     axis square;
@@ -64,7 +80,7 @@ function plot_fig_6_slope
         'Position', [0 0 8.5 5], ...
         'PaperPosition', [0 0 8.5 5]);
 
-    text(0.03, 0.13, sprintf('R^2 = %.2f', r_squared(sigma(:), s_lin(:))), 'FontSize', 8);
+    text(0.03, 0.13, sprintf('R^2 = %.2f', r_squared(sigma(:), s_l(:))), 'FontSize', 8);
     
     fprintf('R squared (one slope): %.2f\n', r_squared(sigma(:), s_lin(:)));
     fprintf('R squared (mlt slope): %.2f\n', r_squared(sigma(:), s_l(:)));

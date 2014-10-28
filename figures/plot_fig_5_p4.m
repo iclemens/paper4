@@ -13,6 +13,7 @@ function plot_fig_5_p4()
       0.18, ...
   ];
 
+
   % Load near-far data
   data4 = load('../analysis/psychometrics_p4.mat');
 
