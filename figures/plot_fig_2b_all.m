@@ -1,4 +1,4 @@
-function plot_fig_4_bar_graph(experiment, mode34)
+function plot_fig_2b_all(experiment, mode34)
   global global_config;
 
   % Settings
@@ -8,10 +8,10 @@ function plot_fig_4_bar_graph(experiment, mode34)
   
   % Load data
   if experiment == 1
-    tmp = load('../analysis/psychometrics_p3.mat');
+    tmp = load(fullfile(global_config.cache_directory, 'psychometrics_p3.mat'));        
     mu = tmp.mu;
   else
-    tmp = load('../analysis/psychometrics_p4.mat');
+    tmp = load(fullfile(global_config.cache_directory, 'psychometrics_p3.mat'));        
     mu = tmp.mu;
   end 
   
@@ -66,15 +66,15 @@ function plot_fig_4_bar_graph(experiment, mode34)
   if save_result
     if experiment == 1
       if mode34
-        outputFile = sprintf('%s/paper3_figure34.eps', global_config.figure_directory_p3);
+        outputFile = fullfile(global_config.figure_directory_p3, 'paper3_figure2.mat');
       else
-        outputFile = sprintf('%s/paper3_figure4.eps', global_config.figure_directory_p3);
+        outputFile = fullfile(global_config.figure_directory_p3, 'paper3_figure2b.mat');
       end
     else
       if mode34
-        outputFile = sprintf('%s/paper4_figure34.eps', global_config.figure_directory_p4);
+        outputFile = fullfile(global_config.figure_directory_p4, 'paper4_figure2.mat');
       else
-        outputFile = sprintf('%s/paper4_figure4.eps', global_config.figure_directory_p4);
+        outputFile = fullfile(global_config.figure_directory_p4, 'paper4_figure2b.mat');
       end
     end
     export_fig('-transparent', '-nocrop', '-eps', outputFile);

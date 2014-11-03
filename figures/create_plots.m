@@ -1,9 +1,9 @@
 
 for experiment = 1:2
-  plot_fig_2_traces(experiment);
-  plot_fig_3_example_curves(experiment, 1);
-  plot_fig_4_bar_graph(experiment, 1);
+  plot_fig_2a_single(experiment, 1);
+  plot_fig_2b_all(experiment, 1);
+  plot_fig_3_eye_traces(experiment);  
 end
 
-plot_fig_5_p3_pse_prediction();
-plot_fig_5_p4();
+%plot_fig_4_model();
+

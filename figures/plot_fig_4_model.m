@@ -1,4 +1,4 @@
-function plot_fig_5_p3_pse_prediction()
+function plot_fig_4_model()
     global global_config;
     
     lin = @(x) x(:);

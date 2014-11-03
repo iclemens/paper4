@@ -1,4 +1,4 @@
-function plot_fig_3_example_curves(experiment, mode34)
+function plot_fig_2a_single(experiment, mode34)
   global global_config;
   
   % Settings  
@@ -8,11 +8,11 @@ function plot_fig_3_example_curves(experiment, mode34)
   
   % Load data
   if experiment == 1
-    tmp = load('../analysis/psychometrics_p3.mat');
+    tmp = load(fullfile(global_config.cache_directory, 'psychometrics_p3.mat'));
     stim_resp = tmp.stim_resp;
     fit = tmp.fit;
   else
-    tmp = load('../analysis/psychometrics_p4.mat');
+    tmp = load(fullfile(global_config.cache_directory, 'psychometrics_p4.mat'));
     stim_resp = tmp.stim_resp;
     fit = tmp.fit;
   end 
@@ -51,14 +51,14 @@ function plot_fig_3_example_curves(experiment, mode34)
     'PaperPosition', [0 0 17.6 4.8], ...  
     'Position', [0 0 17.6 4.8]);
   
-  if experiment == 1
-    %export_fig('-transparent', '-nocrop', '-eps', sprintf('%s/paper3_figure3.eps', global_config.figure_directory_p3));
-  else
-    export_fig('-transparent', '-nocrop', '-eps', sprintf('%s/paper4_figure3.eps', global_config.figure_directory_p4));
+  if ~mode34
+    if experiment == 1
+      export_fig('-transparent', '-nocrop', '-eps', fullfile(global_config.figure_directory_p3, 'paper3_figure2a.eps'));
+    else
+      export_fig('-transparent', '-nocrop', '-eps', fullfile(global_config.figure_directory_p4, 'paper4_figure2a.eps'));
+    end
   end
-  
-  
-  
+
   function curve_panel(handle_axes, subset)
     cla(handle_axes);
     hold(handle_axes, 'on');
