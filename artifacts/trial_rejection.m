@@ -1,19 +1,22 @@
 function trial_rejection(cfg)
-    %
-    % Performs artifact trial rejection
-    %
-    %  cfg is a struct with fields:
-    %   experiment_ids - List of experiments/participants to process
-    %                    use [1:8 11:18] to process everything.
-    %
-
-    
+%
+% Performs artifact trial rejection
+%
+%  cfg is a struct with fields:
+%   experiment_ids - List of experiments/participants to process
+%                    use [1:8 11:18] to process everything.
+%
+% Input files: Cache/preproc_*
+% Output files: Cache/cleaned_*
+%
+      
+  
   global global_config;
   
   deg2rad = @(angle) angle / 180 * pi;
   
   
-  function cal_func = create_cal_func(data)    
+  function cal_func = create_cal_func(data)
     sel_world = arrayfun(@(t) strcmp(t.fix_type{1}, 'world') & t.fix_distance(1) == 0.5, data);
     sel_body = arrayfun(@(t) strcmp(t.fix_type{1}, 'body'), data);
     
@@ -34,7 +37,7 @@ function trial_rejection(cfg)
   end
   
   
-  function [slope, X, Y] = compute_slope(tmp)    
+  function [slope, X, Y] = compute_slope(tmp)
     tmp = tmp([tmp.reject] == 0);
     X = arrayfun(@(t) atan2(t.sled_distance(1), 0.5), tmp)';
     Y = arrayfun(@(t) diff( t.angles([251 751], 1)), tmp)';
@@ -84,6 +87,7 @@ function trial_rejection(cfg)
     
     count = sum(bad_ones);
     
+    % Reject based on excessive speed (e.g. blinks)
     spd = zeros(1, numel(data));
     for t = 1:numel(data)
       angles = data(t).angles(250:750, interval);
@@ -92,7 +96,7 @@ function trial_rejection(cfg)
     
     overspeed = 0;
     for t = 1:numel(data)
-        overspeed = overspeed + (spd(t) > 6 * nanstd(spd));
+      overspeed = overspeed + (spd(t) > 6 * nanstd(spd));
       data(t).reject = data(t).reject | bad_ones(t) | spd(t) > 6 * nanstd(spd);
     end
   end
@@ -129,11 +133,11 @@ function trial_rejection(cfg)
     
     % Recalibrate based on slopes in world and body
     for session = unique(session_ids)
-      selection = session_ids == session;      
+      selection = session_ids == session;
       cal_func = create_cal_func(data(selection));
-      data(selection) = apply_cal_func(data(selection), cal_func);     
+      data(selection) = apply_cal_func(data(selection), cal_func);
     end
-        
+    
     % Perform analysis
     for session = unique(session_ids)
       for i_type = 1:size(types, 1)
@@ -177,20 +181,20 @@ function trial_rejection(cfg)
           title(sprintf('%d', count(i_type, j_type)));
         end
       end
-    end       
+    end
     
     
     % Recalibrate based on slopes in world and body (after trial rejection)
     for session = unique(session_ids)
-      selection = session_ids == session;      
+      selection = session_ids == session;
       cal_func = create_cal_func(data(selection));
-      data(selection) = apply_cal_func(data(selection), cal_func);     
+      data(selection) = apply_cal_func(data(selection), cal_func);
     end
     
     
     filename = sprintf('%s/reject_graph_%02d.eps', local_config.figure_directory, local_config.experiment_id);
     print(h, filename, '-depsc2');
-        
+    
     % Remove fields that are no longer required
     data = rmfield(data, 'samples');
     
@@ -230,13 +234,13 @@ function trial_rejection(cfg)
         ntypes = 4;
       end
       
-
-      count = zeros(ntypes, ntypes);      
+      
+      count = zeros(ntypes, ntypes);
       
       data = [];
       load(sprintf('%s/preproc_%02d', global_config.cache_directory, experiment_id));
       [data, rate(experiment_id), cnt] = mark_bad_trials(local_config, data, experiment);
-
+      
       count = count + cnt / numel(cfg.experiment_ids);
       
       output_filename = sprintf('%s/cleaned_%02d', global_config.cache_directory, experiment_id);

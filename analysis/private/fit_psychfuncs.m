@@ -49,7 +49,7 @@ function [stim_resp, fit, mu, sigma, collapsed] = fit_psychfuncs(experiment)
       tmp = sortrows(tmp, 1);
 
       % Remove outliers
-      stim_resp{c,sindex} = magic_table(tmp, c, s);
+      stim_resp{c,sindex} = transform(tmp, c, s);
       
       % Prepare plot
       subplot(3, 4, c);

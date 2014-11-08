@@ -28,6 +28,23 @@ From the import directory, please run "load_and_preprocess(1)" and "load_and_pre
 
 The "convert_calibration_file" is used to create a calibration file from the data, in case it went missing, you do not need to call this manually. The "break_times" function loads the raw data and reports on the breaks between blocks. It is in the import directory because it needs the raw data files.
 
+Figures showing the calibration data are created in the Reports/calibration directory.
+
 
 Step 3: Rejecting artifacts
 ---------------------------
+
+Run the "trial_rejection" script to reject trials with artifacts.
+
+
+Step 4: Analyze psychometric curves and eye movements
+-----------------------------------------------------
+
+
+Step 5: Fit models and perform statistical test
+-----------------------------------------------
+
+
+Step 6: Create figures
+----------------------
+

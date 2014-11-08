@@ -1,4 +1,4 @@
-function tmp = magic_table(tmp, c, s)
+function tmp = transform(tmp, c, s)
   if s == 1
     if c == 2, tmp(tmp(:, 1) == 0.05, 2) = 0; end;
     if c == 4, tmp(tmp(:, 1) == 0.05, 2) = 0; end;
