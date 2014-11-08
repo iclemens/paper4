@@ -18,8 +18,9 @@ global_config.data_directory = fullfile(base_dir, 'Data');
 
 % Cache directory, prevents costly preprocessing steps
 global_config.cache_directory = fullfile(base_dir, 'Cache');
-
+global_config.models_directory = fullfile(base_dir, 'Cache', 'fits');
 global_config.report_directory = fullfile(base_dir, 'Reports');
+
 
 % Figure directories
 global_config.figure_directory_p3 = fullfile(base_dir, 'Documents', 'Figures3', 'Matlab');
