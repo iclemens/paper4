@@ -1,3 +1,10 @@
+/**
+ * Loads and EyeLink ASCII data-file. Using this MEX file is much faster
+ * than reading the file using pure Matlab code.
+ *
+ * Note that this script does not deal with malformed Matlab code.
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

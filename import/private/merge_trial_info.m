@@ -1,4 +1,10 @@
 function info1 = merge_trial_info(info1, info2)
+% INFO = MERGE_TRIAL_INFO(info1, info2)
+% 
+% Merges two trial_info structs (info1 and info2) and returns
+% the merged result. If there are any discrepancies between
+% the two files, a warning is printed.
+%
   
   function out = close_enough(value1, value2, ignore_nan)
     if nargin < 3, ignore_nan = 0; end;

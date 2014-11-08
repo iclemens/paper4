@@ -1,5 +1,9 @@
 function break_times()
-
+  % BREAK_TIMES
+  %
+  % Loads raw data and prints break times between blocks.
+  %  
+  
 	global global_config;
 
   function [start_time, stop_time] = process_block(experiment_id, block_id)

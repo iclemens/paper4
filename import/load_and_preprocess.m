@@ -1,4 +1,10 @@
 function load_and_preprocess(experiment)
+% LOAD_AND_PREPROCESS(experiment)
+%
+% Main function to load and preprocess all data files.
+% It performs rudimentary calibration.
+%
+  
   global global_config;
   
   if nargin < 1 || experiment == 1
@@ -13,7 +19,7 @@ function load_and_preprocess(experiment)
   
   function main()            
     % Create directory for preprocessing figures
-    cal_figure_directory = [global_config.cache_directory '/figs_calibration'];
+    cal_figure_directory = [global_config.report_directory '/calibration'];
     if ~exist(cal_figure_directory, 'dir'), mkdir(cal_figure_directory); end;
     
     % Load data for all experiments and run preprocessing.
@@ -74,6 +80,4 @@ function load_and_preprocess(experiment)
       trial.vergence(:, i_interval) = pos_r(:, 1) - pos_l(:, 1);
     end
   end
-
-  
 end

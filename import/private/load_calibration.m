@@ -1,4 +1,14 @@
 function cal = load_calibration(experiment_id, first_block_id, display, figure_directory)
+% CAL = LOAD_CALIBRATION( ... )
+%
+% Loads calibraiton file for session that starts with FIRST_BLOCK_ID.
+% If requested, it writes the calibration performance figure into the
+% FIGURE_DIRECTORY.
+%
+% The output structure contain the calibration data as well as
+% a function to convert raw eye positions into angles.
+%
+  
   if nargin < 3
     display = 'none';
   end

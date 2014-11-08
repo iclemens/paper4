@@ -1,5 +1,10 @@
 function trial_info = parse_messages(messages, experiment)
 % Converts eyelink messages into a trial_info structure.
+%
+% Note that this information is also contained within the
+% results CSV file. By loading it from both files, we can
+% later check for anomalies in the data.
+%
 
   % Extract movement distance from messages  
   msg_position_1 = sscanf(messages{strncmp(messages(:, 2), 'SLED POSITION', 13), 2}, 'SLED POSITION %d');

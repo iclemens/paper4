@@ -1,5 +1,9 @@
 function trial_info = parse_results(result)
-    
+%
+% Parses line from CSV file into struct. Most fields
+% are converted into numbers.
+%
+  
     % Extract moved distance    
     if strcmp(result{7}, 'First')
         result_d1 = result{8} / 100.0;

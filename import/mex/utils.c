@@ -1,3 +1,7 @@
+/**
+ * Helper functions for the EyeLink ASCII parser.
+ */
+
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>

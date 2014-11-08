@@ -1,4 +1,14 @@
 function [trials, block_info] = load_block(experiment_id, block_id, experiment)
+% [TRIALS, BLOCK_INFO] = LOAD_BLOCK(experiment_id, block_id, experiment)
+%
+% Loads EyeLink data and psychometric results for block BLOCK_ID
+% in experiment EXPERIMENT_ID. Parameter EXPERIMENT should be
+% 1 for the first experiment (paper 3) or 2 for the second experiment 
+% (paper 4).
+%
+% TRIALS will be a cell array containing all trail data.
+% BLOCK_INFO contain info about all trials in the block.
+%
   
   global global_config;
   
