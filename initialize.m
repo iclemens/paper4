@@ -2,6 +2,10 @@ function initialize()
 %
 % Sets up path and global variables
 %
+% This script attempts to load computer-specific
+% configuration details from a file in the config
+% directory.
+%
 
   fprintf('\n');
 

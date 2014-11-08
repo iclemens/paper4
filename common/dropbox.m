@@ -1,10 +1,16 @@
 function dropbox_dir = dropbox(subdirectory)
+% DROPBOX Returns the path of the dropbox directory
 %
-% Returns the path of the dropbox directory
+% DROPBOX(SUBDIRECTORY) Returns the path to a subdirectory
+%   within your dropbox folder.
 %
-  
+% If Dropbox could not be found, an error is raised.
+%
+% Copyright 2014 Donders Institute, Nijmegen, NL
+%  
+    
   host_db = read_host_db();
-  data = strsplit(fileread('~/.dropbox/host.db'), 10);
+  data = strsplit(host_db, 10);
   dropbox_dir = base_64_decode(data{2});
   
   if nargin > 0

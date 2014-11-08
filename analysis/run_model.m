@@ -1,4 +1,6 @@
 function output_p3 = run_model(model)
+    global global_config;
+  
     % Runs the model
 
     participants = 1:8;
@@ -8,8 +10,8 @@ function output_p3 = run_model(model)
     n_participants = numel(participants);
 
     % Load all data
-    source_p3 = load('../analysis/psychometrics_p3.mat');
-    source_p4 = load('../analysis/psychometrics_p4.mat');
+    source_p3 = load(fullfile(global_config.cache_directory, 'psychometrics_p3.mat'));
+    source_p4 = load(fullfile(global_config.cache_directory, 'psychometrics_p4.mat'));
     
     
     % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

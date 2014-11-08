@@ -1,11 +1,16 @@
+function data = average_order_effect(data)  
 % AVERAGE_ORDER_EFFECT(data)
 % 
-% Averages out order effect
-% Requires order of conditions to be Ab bA
-% The output will only consist of Ab
-% Interval order will be removed
+% Averages across reference-first and reference-second data.
+%
+% This script requires that reference-second data follows 
+% reference-second data with the same fixation conditions.
+%
+% NO ATTEMPT IS MADE TO VERIFY WHETHER THIS IS TRUE FOR YOUR DATASET!
+%
+% Copyright 2014 Donders Institute, Nijmegen, NL
+%
 
-function data = average_order_effect(data)  
   ql = data.ql;
   data = rmfield(data, 'ql');  
   

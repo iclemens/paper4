@@ -1,10 +1,13 @@
-% EXPAND_CONDITIONS(data)
-%
-% Expands Ab Ba into Ab bA Ba aB in order to match
-% all of the 12 or 8 trial conditions (experiment 3
-% and 4 respectively).
-
 function data = expand_conditions(data)
+% EXPAND_CONDITIONS(data) Expands eye movement data, which does not take
+%   reference/probe intervals into account (only first vs second movement),
+%   into the conditions that we actually measured.
+% 
+% For example, ab (only condition) would expand into (A)b (b)A.
+%
+% Copyright 2014 Donders Institute, Nijmegen, NL
+%
+
   M = [1 2 2 1];
   n = size(data, 2) / 2;
   

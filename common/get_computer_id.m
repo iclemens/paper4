@@ -1,6 +1,7 @@
 function sid = get_computer_id()
+% SID = GET_COMPUTER_ID Returns an ID uniquely identifying the computer.
 %
-% Function that returns a unique computer ID.
+% It uses the MAC address, and is based on code from:
 % http://undocumentedmatlab.com/blog/unique-computer-id/
 %
 
