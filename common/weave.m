@@ -1,13 +1,15 @@
+function [r, p] = weave(one, two)
 % WEAVE(one, two)
 %
 % Converts first/second interval format data
-% into reference/probe format. 
+% into reference/probe format.
 %
 % This function requires that all even rows
 % are reference first and all odd rows are
 % reference second.
-
-function [r, p] = weave(one, two)
+%
+% Copyright 2014 Donders Institute, Nijmegen, NL
+  
   n_conds = numel(one);
   
   r(1:2:n_conds) = one(1:2:n_conds);

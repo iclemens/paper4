@@ -4,7 +4,8 @@ function sid = get_computer_id()
 % It uses the MAC address, and is based on code from:
 % http://undocumentedmatlab.com/blog/unique-computer-id/
 %
-
+% Copyright 2014 Donders Institute, Nijmegen, NL
+  
   sid = '00';
   ni = java.net.NetworkInterface.getNetworkInterfaces;
   while ni.hasMoreElements
