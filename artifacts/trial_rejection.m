@@ -14,6 +14,11 @@ function trial_rejection(cfg)
   global global_config;
   
   deg2rad = @(angle) angle / 180 * pi;
+
+  
+  if nargin < 1
+    cfg = struct('experiment_ids', [1:8 11:18]);
+  end
   
   
   function cal_func = create_cal_func(data)

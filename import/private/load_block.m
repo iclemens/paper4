@@ -39,6 +39,15 @@ function [trials, block_info] = load_block(experiment_id, block_id, experiment)
 
   results = load_results(res);
 
+  if ~exist(eye, 'file')
+    disp(['\nBefore importing data, your eye link .EDF files need to be ' ...
+         'converted into .ASC files. SR Research provides a tool which ' ...
+         'performs this conversion. Please convert the EDF files and store ' ...
+         'the result in the eyelink subdirectory of your Cache directory.']);
+
+    error('LoadBlock:EyeLinkFileNotFound', 'Could not find EyeLink data file: %s', eye);
+  end
+  
   [eye_samples, eye_messages] = load_eyelink(eye);
   eye_samples = eye_samples';
   eye_samples(eye_samples(:) == 0) = NaN;

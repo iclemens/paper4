@@ -3,6 +3,9 @@ This directory contains the scripts used to analyze the data for paper 3 and 4.
 
 Analysis is broken down into several steps, each step writes its output into the cache directory (which can be chosen in Step 1). Because of this, you only need to run these steps after clearing the cache directory or changing the algorithm (parameters) used.
 
+Before starting, the EyeLink EDF files need to be converted to ASCII files (using edf2asc). The resulting files need to be places in the eyelink subdirectory of the Cache directory. There is no need to run this step again in case the ASCII files already exist.
+
+
 Step 1: Load global configuration
 ---------------------------------
 
