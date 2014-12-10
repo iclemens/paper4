@@ -1,9 +1,11 @@
-function plot_fig_5_p3_pse_prediction()
+function plot_fig_4_p3_pse_prediction_pp()
     global global_config;
     
     lin = @(x) x(:);
     
-    data_all = load('../analysis/data/MDL_Eye movements');
+    data_all = load(fullfile(global_config.models_directory, 'MDL_Paper3_BW'));
+    
+    %data_all = load('../analysis/data/MDL_Eye movements');
     
     for j = 1:8
         data.mup(:, j) = data_all.output_p3(j).data.mp;
@@ -79,28 +81,33 @@ function plot_fig_5_p3_pse_prediction()
         %size(L)
 %         L = NaN;
 %         
-%         for i_tst_condition = 1:numel(ss_tst)
-%             i_condition = ss_tst(i_tst_condition);
-%             color = colors(i_condition, :);
-%             
-%             X = data.mup(i_condition, :);
-%             Y = data.muppred(i_condition, :);
-%             
-%             wd = 0.003;
-%             
-%             handle_errorbars = [ ...
-%                 line(mean(X) + [-1 1] * std(X), mean(Y) * [1 1]);
-%                 line(mean(X) * [1 1], mean(Y) + [-1 1] * std(Y));
-%                 
-%                 line(mean(X) + [-wd wd], mean(Y) - [1 1] * std(Y));
-%                 line(mean(X) + [-wd wd], mean(Y) + [1 1] * std(Y));
-%                 
-%                 line(mean(X) - [1 1] * std(X), mean(Y) + [-wd wd]);
-%                 line(mean(X) + [1 1] * std(X), mean(Y) + [-wd wd]);
-%                 ];
-%             
-%             set(handle_errorbars, 'Color', color, 'LineWidth', 1);
-%         end
+
+    figure(2);
+    plot(data.mup, data.muppred, '.');
+    
+    
+        for i_tst_condition = 1:numel(ss_tst)
+            i_condition = ss_tst(i_tst_condition);
+            color = colors(i_condition, :);
+            
+            X = data.mup(i_condition, :);
+            Y = data.muppred(i_condition, :);
+            
+            wd = 0.003;
+            
+            handle_errorbars = [ ...
+                line(mean(X) + [-1 1] * std(X), mean(Y) * [1 1]);
+                line(mean(X) * [1 1], mean(Y) + [-1 1] * std(Y));
+                
+                line(mean(X) + [-wd wd], mean(Y) - [1 1] * std(Y));
+                line(mean(X) + [-wd wd], mean(Y) + [1 1] * std(Y));
+                
+                line(mean(X) - [1 1] * std(X), mean(Y) + [-wd wd]);
+                line(mean(X) + [1 1] * std(X), mean(Y) + [-wd wd]);
+                ];
+            
+            set(handle_errorbars, 'Color', color, 'LineWidth', 1);
+        end
 %         
         
         % Style

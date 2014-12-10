@@ -18,15 +18,14 @@ function [out, conds] = collect_eye_gain(experiment)
   global global_config;
   
   conds = cell(1, 6, 2);
-  
-  if nargin < 3, participants = 1:8; end;
-  if nargin < 2, experiment = 1; end;
-  
+    
   % Create list of conditions
   if experiment == 1
     conditions = global_config.conditions_p3;
-  else
+  elseif experiment == 2
     conditions = global_config.conditions_p4;
+  else
+    error('Invalid parameter value (experiment).');
   end
   
   conditions = vertcat(conditions{:});
@@ -39,8 +38,10 @@ function [out, conds] = collect_eye_gain(experiment)
     
     if experiment == 1
       data = load(sprintf('%s/cleaned_%02d.mat', global_config.cache_directory, s));
-    else
+    elseif experiment == 2
       data = load(sprintf('%s/cleaned_%02d.mat', global_config.cache_directory, 10 + s));
+    else
+      error('Invalid parameter value (experiment.');
     end
     
     data = data.data([data.data.reject] == 0);
