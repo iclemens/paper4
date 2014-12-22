@@ -39,9 +39,9 @@ function compare_models()
     fprintf(f, '<table><tr><td>');
     write_param_table(f, models{i});
     fprintf(f, '</td><td><a href="MDL_');
-    fprintf(f, models{n_models}.name);
+    fprintf(f, models{i}.name);
     fprintf(f, '.png"><img height="300" src="MDL_');
-    fprintf(f, models{n_models}.name);
+    fprintf(f, models{i}.name);
     fprintf(f, '.png" /></a></td></tr></table>');
   end
   

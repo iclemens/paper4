@@ -15,9 +15,10 @@ function perform_analyses()
     fprintf(' Fitting psychometric functions\n');
     [stim_resp, fit, mu, sigma, collapsed] = fit_psychfuncs(experiment);
     
-    fprintf(' Extended (gain / exp)\n');
-    eye_gain = collect_eye_gain(experiment);
+    fprintf(' Collecting eye movement gains\n');
+    eye_gain = collect_eye_gain(experiment);    
+    eye_gain_by_type = collect_eye_gain_per_type(experiment);
     
-    save(fullfile(global_config.cache_directory ,outputfiles{experiment}), 'stim_resp', 'fit', 'mu', 'sigma', 'eye_gain');
+    save(fullfile(global_config.cache_directory ,outputfiles{experiment}), 'stim_resp', 'fit', 'mu', 'sigma', 'eye_gain', 'eye_gain_by_type');
   end
 end

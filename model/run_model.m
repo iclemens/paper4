@@ -1,9 +1,11 @@
-function output_p3 = run_model(model)
+function output_p3 = run_model(mdl)
     global global_config;
 
     % Runs the model
-
     participants = 1:8;
+    model = mdl();
+
+    %model.set_conditions(7:10);
 
     % Parameters
     n_bootstrap_runs = 1; %3999;
@@ -31,7 +33,6 @@ function output_p3 = run_model(model)
 
 
     Rsq = zeros(1, n_participants);
-    BIC = zeros(1, n_participants);
 
 
     % %%%%%%%%%%%
@@ -56,7 +57,7 @@ function output_p3 = run_model(model)
             output_p3(sb).data.(fields{fl}) = data_p3.(fields{fl});
             output_p4(sb).data.(fields{fl}) = data_p4.(fields{fl});
         end
-
+        
         output_p3(sb).fit = model.solve_params(data);
         params(sb, :) = output_p3(sb).fit;
 
@@ -66,22 +67,22 @@ function output_p3 = run_model(model)
 
 
         % Perform bootstrap
-        for r = 1:n_bootstrap_runs
-            data_p3 = filter_data(source_p3, sb, r);
-            data_p4 = filter_data(source_p4, sb, r);
+        %for r = 1:n_bootstrap_runs
+        %    data_p3 = filter_data(source_p3, sb, r);
+        %    data_p4 = filter_data(source_p4, sb, r);
 
-            data = combine_data(data_p3, data_p4);
+        %    data = combine_data(data_p3, data_p4);
 
-            output_p3(sb).sim(r, :) = model.solve_params(data);
+        %    output_p3(sb).sim(r, :) = model.solve_params(data);
 
-            output_p3(sb).pred_sim.mp(r, :) = model.predict_mu_probe(output_p3(sb).sim(r, :), data_p3);
-            output_p4(sb).pred_sim.mp(r, :) = model.predict_mu_probe(output_p3(sb).sim(r, :), data_p4);
-        end
+        %    output_p3(sb).pred_sim.mp(r, :) = model.predict_mu_probe(output_p3(sb).sim(r, :), data_p3);
+        %    output_p4(sb).pred_sim.mp(r, :) = model.predict_mu_probe(output_p3(sb).sim(r, :), data_p4);
+        %end
 
-        % Compute R Squared
+        % Compute R Squared over BOTH p3 and p4 data!
         pred(sb, :) = [output_p3(sb).pred.mp output_p4(sb).pred.mp];
         act(sb, :) = [output_p3(sb).data.mp output_p4(sb).data.mp];
-
+        
         Rsq(sb) = max(0, r_squared(act(sb, :), pred(sb, :)));
 
         if(size(act, 2) == 20)
@@ -91,15 +92,6 @@ function output_p3 = run_model(model)
             Rsq(sb) = max(0, r_squared(act(sb, 1:6), pred(sb, 1:6)));
             RsqBW(sb) = max(0, r_squared(act(sb, 1:2), pred(sb, 1:2)));
         end
-
-        % Compute BIC
-        Nobs3 = sum(cellfun(@(entry) size(entry, 1), source_p3.stim_resp), 1);
-        Nobs4 = sum(cellfun(@(entry) size(entry, 1), source_p4.stim_resp), 1);
-
-        k = numel(output_p3(sb).fit);   % Number of free parameters
-        n = Nobs3(sb) + Nobs4(sb);      % Number of observations / data points
-
-        Penalty(sb) = k * (log(n) - log(2 * pi));
     end
 
     labels = model.get_param_names();
@@ -110,6 +102,8 @@ function output_p3 = run_model(model)
         
         save(fullfile(global_config.models_directory, MDL_File), ...
             'output_p3', 'output_p4', 'Rsq', 'params', 'labels');
+                
+        plot_actual_vs_expected_pse(sprintf('MDL_%s', model.get_name()));
     end
 
     % Print model output

@@ -1,8 +1,10 @@
-function plot_actual_vs_expected_pse
+function plot_actual_vs_expected_pse(model)
 
     global global_config;
 
-    model = 'MDL_Paper3_BW';
+    if nargin < 1
+        model = 'MDL_Paper3_BW';
+    end
     
     input_filename = fullfile(global_config.models_directory, model);
     output_filename = fullfile(global_config.report_directory, [model '.png']);
@@ -13,7 +15,7 @@ function plot_actual_vs_expected_pse
     
     % Paper 3
 
-    for type = 1:2
+    for type = 2
         for paper = 1:2
             
             % Preallocate matrices
@@ -34,7 +36,7 @@ function plot_actual_vs_expected_pse
 
             % Create plot
             
-            subplot(2, 2, type * 2 + paper - 2);
+            subplot(1, 2, paper);
             cla; hold on;
 
             axis equal
@@ -45,16 +47,23 @@ function plot_actual_vs_expected_pse
                 plot(X', Y', 'x', 'LineWidth', 5);
             end
 
-            line(xlim, xlim, 'LineStyle', '--', 'Color', 'Black');
-
+            
+            b = [0 0.25];
+            line(b, b, 'LineStyle', '--', 'LineWidth', 2, 'Color', 'Black');
+            
+            lsline;
+            
             xlabel('Actual PSE');
             ylabel('Predicted PSE');
-            title(sprintf('Paper %d: %s', paper, conds{type}));
-
-            lsline;
+            
+            xlim([0 0.25]);
+            ylim([0 0.25]);
+            
+            title(sprintf('Paper %d: %s', paper + 2));
         end
     end
     
+    set_dims(gcf, [560 300], 'paper');
     print(gcf, '-dpng', output_filename);
 end
 
