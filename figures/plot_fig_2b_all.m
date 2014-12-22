@@ -32,8 +32,13 @@ function plot_fig_2b_all(experiment, mode34)
     rows = 1;
     ofs = 0;
   else
-    rows = 2;
-    ofs = 3;
+    if experiment == 1
+      rows = 2;
+      ofs = 3;
+    elseif experiment == 2
+      rows = 2;
+      ofs = 2;
+    end;
   end
 
   if experiment == 1
@@ -66,15 +71,15 @@ function plot_fig_2b_all(experiment, mode34)
   if save_result
     if experiment == 1
       if mode34
-        outputFile = fullfile(global_config.figure_directory_p3, 'paper3_figure2.mat');
+        outputFile = fullfile(global_config.figure_directory_p3, 'paper3_figure2.eps');
       else
-        outputFile = fullfile(global_config.figure_directory_p3, 'paper3_figure2b.mat');
+        outputFile = fullfile(global_config.figure_directory_p3, 'paper3_figure2b.eps');
       end
     else
       if mode34
-        outputFile = fullfile(global_config.figure_directory_p4, 'paper4_figure2.mat');
+        outputFile = fullfile(global_config.figure_directory_p4, 'paper4_figure2.eps');
       else
-        outputFile = fullfile(global_config.figure_directory_p4, 'paper4_figure2b.mat');
+        outputFile = fullfile(global_config.figure_directory_p4, 'paper4_figure2b.eps');
       end
     end
     export_fig('-transparent', '-nocrop', '-eps', outputFile);

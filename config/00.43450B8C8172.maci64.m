@@ -31,5 +31,6 @@ global_config.figure_directory_p4 = fullfile(base_dir, 'Documents', 'Figures4', 
 % External scripts
 
 global_config.tool_directories = {
-  fullfile(dropbox(), '/Development/MATLAB/Tools/psignifit')
+  fullfile(dropbox(), '/Development/MATLAB/Tools/psignifit');
+  fullfile(dropbox(), '/Development/MATLAB/Tools/exportfig');
   };
